@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель</title>
+</head>
+<body>
+    <h2>Привет, {{ user.username }}!</h2>
+    <p>Твоя роль: {{ user.role }}</p>
+    <a href="{{ url_for('logout') }}">Выйти</a>
+</body>
+</html>

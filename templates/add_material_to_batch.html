@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить материал к партии {{ batch.batch_number }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Логотип -->
+    <header class="text-center py-6 bg-white shadow-sm">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="mx-auto w-32">
+        <h1 class="text-2xl font-bold mt-4">Добавить материал</h1>
+        <div class="mt-4">
+            <a href="/batch/{{ batch.id }}" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mr-2">К партии</a>
+            <a href="/batch_list" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg mr-2">Список партий</a>
+            <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Выйти</a>
+        </div>
+    </header>
+
+    <!-- Контент -->
+    <main class="w-full max-w-4xl mx-auto p-6">
+        
+        <!-- Информация о партии -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h2 class="text-lg font-semibold text-blue-800">Партия: {{ batch.batch_number }}</h2>
+            <p class="text-blue-600">
+                Тип: {% if batch.batch_type == 'casting' %}Заливка
+                {% elif batch.batch_type == 'cutting' %}Резка
+                {% elif batch.batch_type == 'autoclave' %}Автоклав
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Форма добавления материала -->
+        <div class="bg-white p-8 rounded-2xl shadow-md">
+            <form method="POST" action="/add_material_to_batch/{{ batch.id }}">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Выбор материала -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Материал *</label>
+                        <select name="material_id" required 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Выберите материал</option>
+                            {% for material in materials %}
+                            <option value="{{ material.id }}">{{ material.name }} ({{ material.unit }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Количество -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Количество *</label>
+                        <input type="number" name="quantity" step="0.01" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="0.00">
+                    </div>
+
+                </div>
+
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button type="submit" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold">
+                        Добавить материал
+                    </button>
+                    <a href="/batch/{{ batch.id }}" 
+                       class="bg-gray-500 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold">
+                        Отмена
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Список уже добавленных материалов -->
+        {% if batch.materials %}
+        <div class="bg-white rounded-2xl shadow-md p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4">Уже добавленные материалы</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Материал</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Количество</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Единица</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Время</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for batch_material in batch.materials %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ batch_material.material.name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ "%.2f"|format(batch_material.quantity) }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ batch_material.material.unit }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ batch_material.recorded_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </main>
+
+</body>
+</html>
+
+
+
+

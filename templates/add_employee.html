@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Добавить сотрудника</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        .logo {
+            margin-top: 30px;
+        }
+        .form-container {
+            margin: 30px auto;
+            padding: 20px;
+            width: 400px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background-color: #28a745;
+            color: white;
+        }
+        button:hover {
+            background-color: #1e7e34;
+        }
+        .back {
+            margin-top: 15px;
+        }
+        .back a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .back a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" width="150">
+        <h2>Добавление сотрудника</h2>
+    </div>
+
+    <div class="form-container">
+        <form method="POST">
+            <input type="text" name="fio" placeholder="ФИО" required>
+            <input type="text" name="iin" placeholder="ИИН (12 цифр)" required pattern="\d{12}">
+            <input type="text" name="position" placeholder="Должность (например, заливщик)" required>
+
+            <select name="role" required>
+                <option value="" disabled selected>Выберите роль</option>
+                <option value="employee">Сотрудник</option>
+                <option value="casting_operator">Заливщик</option>
+                <option value="cutting_operator">Резчик</option>
+                <option value="autoclave_operator">Автоклавщик</option>
+                <option value="chief_technologist">Главный технолог</option>
+                <option value="director">Директор</option>
+                <option value="admin">Администратор</option>
+            </select>
+
+            <button type="submit">Создать</button>
+        </form>
+        <div class="back">
+            <a href="{{ url_for('admin_dashboard') }}">⬅ Вернуться в панель админа</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            text-align: center;
+        }
+        .logo {
+            margin-top: 30px;
+        }
+        .buttons {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 70%;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        
+        /* Мобильная адаптивность */
+        @media (max-width: 768px) {
+            .logo {
+                margin-top: 15px;
+            }
+            .logo img {
+                width: 120px;
+            }
+            .buttons {
+                margin: 15px 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            button {
+                width: 90%;
+                max-width: 300px;
+                margin: 5px 0;
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            table {
+                width: 95%;
+                margin: 15px auto;
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px 4px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                margin-top: 10px;
+            }
+            .logo img {
+                width: 100px;
+            }
+            .buttons {
+                margin: 10px 0;
+            }
+            button {
+                width: 95%;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+            table {
+                width: 98%;
+                margin: 10px auto;
+                font-size: 10px;
+            }
+            th, td {
+                padding: 6px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" width="150">
+        <h2>Привет, админ!</h2>
+    </div>
+
+    <div class="buttons">
+        <a href="{{ url_for('add_employee') }}"><button>➕ Добавить сотрудника</button></a>
+        <a href="{{ url_for('products_list') }}"><button>🏭 Управление продуктами</button></a>
+        <a href="{{ url_for('templates_list') }}"><button>📋 Шаблоны партий</button></a>
+        <a href="/batch_list"><button>📦 Партии</button></a>
+        <a href="/init_references"><button>🔧 Инициализировать справочники</button></a>
+        <a href="{{ url_for('logout') }}"><button>🚪 Выйти</button></a>
+    </div>
+
+    <h3>Список сотрудников</h3>
+    <table>
+        <tr>
+            <th>ФИО</th>
+            <th>Логин</th>
+            <th>Пароль</th>
+        </tr>
+        {% for emp in employees %}
+        <tr>
+            <td>{{ emp.fio }}</td>
+            <td>{{ emp.username }}</td>
+            <td>{{ emp.password_plain }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

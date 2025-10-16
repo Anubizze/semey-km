@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд резчика</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+        }
+        .dashboard-container {
+            background: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .header {
+            background: #ffffff;
+            color: #374151;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        /* Мобильная адаптивность */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .dashboard-container {
+                border-radius: 8px;
+                margin: 0;
+            }
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            .header .flex {
+                flex-direction: column;
+                gap: 0.5rem;
+                width: 100%;
+            }
+            .btn-primary, .btn-danger {
+                width: 100%;
+                padding: 10px 16px;
+                font-size: 14px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .batch-card {
+                padding: 1rem;
+            }
+            .batch-card .grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .table th, .table td {
+                padding: 8px 4px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+            }
+            .header h1 {
+                font-size: 1.25rem;
+            }
+            .header .flex img {
+                height: 40px;
+            }
+            .btn-primary, .btn-danger {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+            .batch-card {
+                padding: 0.75rem;
+            }
+            .table {
+                font-size: 11px;
+            }
+            .table th, .table td {
+                padding: 6px 2px;
+            }
+        }
+        .batch-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .batch-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #3b82f6;
+        }
+        .batch-active {
+            border-left: 4px solid #10b981;
+            background: #f0fdf4;
+        }
+        .batch-completed {
+            border-left: 4px solid #6b7280;
+            background: #f9fafb;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-completed {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+        .form-control {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .table {
+            background: white;
+        }
+        .table th {
+            background: #f8fafc;
+            color: #374151;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="dashboard-container">
+            <div class="header p-6 flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="h-16">
+                    <h1 class="text-2xl font-bold">✂️ Дашборд резчика</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <a href="{{ url_for('batch_list') }}" class="btn-primary">
+                        📋 Все партии
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn-danger">Выйти</a>
+                </div>
+            </div>
+
+            <!-- Форма создания новой партии резки -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="card-header p-4">
+                    <h3 class="text-lg font-semibold">▶️ Начать новую партию резки</h3>
+                </div>
+                <div class="p-6">
+                    <form method="POST" action="{{ url_for('start_cutting_batch') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Номер партии *</label>
+                                <input type="text" class="form-control w-full" name="batch_number" required 
+                                       placeholder="Например: CUT-001">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Оборудование (резчик)</label>
+                                <select class="form-control w-full" name="equipment_id">
+                                    <option value="">Не выбрано</option>
+                                    {% for cutter in cutters %}
+                                    <option value="{{ cutter.id }}">{{ cutter.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Смена *</label>
+                                <select class="form-control w-full" name="shift" required>
+                                    <option value="day">🌅 Дневная смена</option>
+                                    <option value="night">🌙 Ночная смена</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Примечания</label>
+                                <input type="text" class="form-control w-full" name="notes" 
+                                       placeholder="Размеры, особенности и т.д.">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary text-lg">
+                            ▶️ Начать резку
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Активные партии резки -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="card-header p-4">
+                    <h3 class="text-lg font-semibold">⚙️ Активные партии резки ({{ active_batches|length }})</h3>
+                </div>
+                <div class="p-6">
+                    {% if active_batches %}
+                        <div class="space-y-4">
+                            {% for batch in active_batches %}
+                            <div class="batch-card batch-active p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                    <div>
+                                        <h5 class="font-semibold text-lg">{{ batch.batch_number }}</h5>
+                                        <span class="status-badge status-active">Активна</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Начало резки:</p>
+                                        <p class="font-semibold">{{ batch.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                                        <p class="text-sm text-blue-600">
+                                            {% if batch.shift == 'day' %}🌅 Дневная{% else %}🌙 Ночная{% endif %} смена
+                                        </p>
+                                    </div>
+                                    <div>
+                                        {% if batch.equipment %}
+                                        <p class="text-sm text-gray-600">Оборудование:</p>
+                                        <p class="font-semibold">{{ batch.equipment.name }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex flex-col space-y-2">
+                                        <form method="POST" action="{{ url_for('stop_cutting_batch', batch_id=batch.id) }}" 
+                                              onsubmit="return confirm('Завершить резку партии?');">
+                                            <button type="submit" class="btn-danger w-full">
+                                                ⏹️ Завершить резку
+                                            </button>
+                                        </form>
+                                        <a href="/cancel_batch/{{ batch.id }}" class="btn-danger text-center">
+                                            ❌ Отменить
+                                        </a>
+                                    </div>
+                                </div>
+                                {% if batch.notes %}
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <p class="text-sm text-gray-600">Примечания: {{ batch.notes }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-gray-500 py-8">Нет активных партий резки</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Завершенные партии -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="card-header p-4">
+                    <h3 class="text-lg font-semibold">✅ Последние завершенные партии</h3>
+                </div>
+                <div class="p-6">
+                    {% if completed_batches %}
+                        <div class="space-y-4">
+                            {% for batch in completed_batches %}
+                            <div class="batch-card batch-completed p-4">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                                    <div>
+                                        <h5 class="font-semibold text-lg">{{ batch.batch_number }}</h5>
+                                        <span class="status-badge status-completed">Завершена</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Начало:</p>
+                                        <p class="font-semibold">{{ batch.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                                        <p class="text-sm text-blue-600">
+                                            {% if batch.shift == 'day' %}🌅 Дневная{% else %}🌙 Ночная{% endif %} смена
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-600">Окончание:</p>
+                                        {% if batch.end_time %}
+                                        <p class="font-semibold">{{ batch.end_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                                        {% else %}
+                                        <p class="text-gray-400">—</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        {% if batch.equipment %}
+                                        <p class="text-sm text-gray-600">Оборудование:</p>
+                                        <p class="font-semibold">{{ batch.equipment.name }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if batch.notes %}
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    <p class="text-sm text-gray-600">Примечания: {{ batch.notes }}</p>
+                                </div>
+                                {% endif %}
+                                <div class="mt-3 pt-3 border-t border-gray-200">
+                                    {% if batch.end_time and batch.start_time %}
+                                    {% set duration = (batch.end_time - batch.start_time).total_seconds() / 60 %}
+                                    <p class="text-sm text-gray-600">Длительность резки: <span class="font-semibold">{{ "%.0f"|format(duration) }} мин</span></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center text-gray-500 py-8">Нет завершенных партий</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- История операций за сегодня -->
+            {% if today_batches %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="card-header p-4">
+                    <h3 class="text-lg font-semibold">📋 История операций резки за сегодня</h3>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="table w-full">
+                            <thead>
+                                <tr>
+                                    <th class="text-left py-3 px-4">Номер партии</th>
+                                    <th class="text-left py-3 px-4">Время начала</th>
+                                    <th class="text-left py-3 px-4">Смена</th>
+                                    <th class="text-left py-3 px-4">Время окончания</th>
+                                    <th class="text-left py-3 px-4">Оборудование</th>
+                                    <th class="text-left py-3 px-4">Статус</th>
+                                    <th class="text-left py-3 px-4">Длительность</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% for batch in today_batches %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="py-3 px-4 font-semibold">{{ batch.batch_number }}</td>
+                                    <td class="py-3 px-4">{{ batch.start_time.strftime('%H:%M') }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if batch.shift == 'day' %}
+                                            <span class="badge bg-yellow-100 text-yellow-800">🌅 Дневная</span>
+                                        {% else %}
+                                            <span class="badge bg-gray-800 text-white">🌙 Ночная</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if batch.end_time %}
+                                            {{ batch.end_time.strftime('%H:%M') }}
+                                        {% else %}
+                                            <span class="text-gray-400">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if batch.equipment %}
+                                            {{ batch.equipment.name }}
+                                        {% else %}
+                                            <span class="text-gray-400">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="badge {% if batch.status == 'active' %}bg-green-100 text-green-800{% elif batch.status == 'completed' %}bg-gray-100 text-gray-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                            {% if batch.status == 'active' %}Активна
+                                            {% elif batch.status == 'completed' %}Завершена
+                                            {% else %}{{ batch.status|title }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if batch.end_time and batch.start_time %}
+                                            {% set duration = (batch.end_time - batch.start_time).total_seconds() / 60 %}
+                                            {{ "%.0f"|format(duration) }} мин
+                                        {% elif batch.status == 'active' %}
+                                            <span class="text-green-600 font-semibold">В процессе</span>
+                                        {% else %}
+                                            <span class="text-gray-400">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="card-header p-4">
+                    <h3 class="text-lg font-semibold">📋 История операций резки за сегодня</h3>
+                </div>
+                <div class="p-6 text-center text-gray-500">
+                    <p class="text-lg">📝 Операций резки за сегодня пока нет</p>
+                    <p class="text-sm mt-2">Начните новую партию резки выше</p>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</body>
+</html>
+
+
+

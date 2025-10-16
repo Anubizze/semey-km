@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблоны партий</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-slate-800 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-6">
+                    <div class="flex items-center">
+                        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Logo" class="h-8 w-8 mr-3">
+                        <h1 class="text-2xl font-bold">Шаблоны партий</h1>
+                    </div>
+                    <div class="flex space-x-4">
+                        <a href="{{ url_for('add_template') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            ➕ Создать шаблон
+                        </a>
+                        <a href="{{ url_for('admin_dashboard') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            ← Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            {% if templates %}
+            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Доступные шаблоны</h2>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Название</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Тип партии</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Продукт</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Оборудование</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Материалы</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for template in templates %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ template.name }}</div>
+                                    {% if template.notes %}
+                                    <div class="text-sm text-gray-500">{{ template.notes[:50] }}{% if template.notes|length > 50 %}...{% endif %}</div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {% if template.batch_type == 'casting' %}bg-blue-100 text-blue-800
+                                        {% elif template.batch_type == 'cutting' %}bg-green-100 text-green-800
+                                        {% elif template.batch_type == 'autoclave' %}bg-purple-100 text-purple-800
+                                        {% endif %}">
+                                        {% if template.batch_type == 'casting' %}🔄 Заливка
+                                        {% elif template.batch_type == 'cutting' %}✂️ Резка
+                                        {% elif template.batch_type == 'autoclave' %}🔥 Автоклав
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if template.product %}
+                                        {{ template.product.name }}
+                                    {% else %}
+                                        <span class="text-gray-400">Не указан</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if template.equipment %}
+                                        {{ template.equipment.name }}
+                                    {% else %}
+                                        <span class="text-gray-400">Не указано</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if template.materials %}
+                                        <div class="space-y-1">
+                                            {% for material in template.materials %}
+                                            <div class="text-xs">
+                                                {{ material.material.name }}: {{ material.quantity }} {{ material.material.unit }}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">Нет материалов</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <a href="{{ url_for('create_batch_from_template', template_id=template.id) }}" 
+                                       class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md">
+                                        🚀 Создать партию
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <div class="mx-auto h-12 w-12 text-gray-400">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Нет шаблонов</h3>
+                <p class="mt-1 text-sm text-gray-500">Начните с создания первого шаблона партии.</p>
+                <div class="mt-6">
+                    <a href="{{ url_for('add_template') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                        ➕ Создать шаблон
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>
+
+

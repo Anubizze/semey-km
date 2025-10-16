@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список партий</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Логотип -->
+    <header class="text-center py-6 bg-white shadow-sm">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="mx-auto w-32">
+        <h1 class="text-2xl font-bold mt-4">Список партий</h1>
+        <div class="mt-4">
+            <a href="/create_batch" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg mr-2">Создать партию</a>
+            <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Выйти</a>
+        </div>
+    </header>
+
+    <!-- Контент -->
+    <main class="w-full max-w-7xl mx-auto p-6">
+        
+        <!-- Панель фильтров -->
+        <div class="bg-white rounded-2xl shadow-md mb-6 p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">🔍 Фильтры</h2>
+            
+            <form method="GET" action="{{ url_for('batch_list') }}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <!-- Тип партии -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Тип партии</label>
+                    <select name="batch_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all" {% if current_filters.batch_type == 'all' %}selected{% endif %}>Все типы</option>
+                        <option value="casting" {% if current_filters.batch_type == 'casting' %}selected{% endif %}>🧱 Заливка</option>
+                        <option value="cutting" {% if current_filters.batch_type == 'cutting' %}selected{% endif %}>✂️ Резка</option>
+                        <option value="autoclave" {% if current_filters.batch_type == 'autoclave' %}selected{% endif %}>🔥 Автоклав</option>
+                    </select>
+                </div>
+                
+                <!-- Статус -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Статус</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all" {% if current_filters.status == 'all' %}selected{% endif %}>Все статусы</option>
+                        <option value="active" {% if current_filters.status == 'active' %}selected{% endif %}>Активные</option>
+                        <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>Завершенные</option>
+                        <option value="cancelled" {% if current_filters.status == 'cancelled' %}selected{% endif %}>Отмененные</option>
+                    </select>
+                </div>
+                
+                <!-- Продукт -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Продукт</label>
+                    <select name="product" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all" {% if current_filters.product == 'all' %}selected{% endif %}>Все продукты</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" {% if current_filters.product == product.id|string %}selected{% endif %}>
+                            {{ product.product_code }} - {{ product.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Оборудование -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Оборудование</label>
+                    <select name="equipment" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="all" {% if current_filters.equipment == 'all' %}selected{% endif %}>Все оборудование</option>
+                        {% for eq in equipment %}
+                        <option value="{{ eq.id }}" {% if current_filters.equipment == eq.id|string %}selected{% endif %}>
+                            {{ eq.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Дата с -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Дата с</label>
+                    <input type="date" name="date_from" value="{{ current_filters.date_from }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Дата по -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Дата по</label>
+                    <input type="date" name="date_to" value="{{ current_filters.date_to }}" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <!-- Кнопки -->
+                <div class="flex gap-2 items-end">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                        🔍 Применить
+                    </button>
+                    <a href="{{ url_for('batch_list') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                        🗑️ Сбросить
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+            
+            <!-- Заголовок таблицы -->
+            <div class="bg-gray-50 px-6 py-4 border-b flex justify-between items-center">
+                <h2 class="text-xl font-semibold text-gray-800">Все партии</h2>
+                {% if pagination.total > 0 %}
+                <div class="text-sm text-gray-600">
+                    Показано {{ (pagination.page - 1) * pagination.per_page + 1 }}-{{ pagination.page * pagination.per_page if pagination.page * pagination.per_page <= pagination.total else pagination.total }} из {{ pagination.total }} записей
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Таблица партий -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Номер партии</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Продукт</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Тип</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Оператор</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Оборудование</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Начало</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for batch, user in batches %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ batch.batch_number }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    {% if batch.product %}
+                                        <div class="font-mono text-blue-600">{{ batch.product.product_code }}</div>
+                                        <div class="text-xs text-gray-500">{{ batch.product.name }}</div>
+                                    {% else %}
+                                        <span class="text-gray-400">Не указан</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if batch.batch_type == 'casting' %}bg-blue-100 text-blue-800
+                                    {% elif batch.batch_type == 'cutting' %}bg-green-100 text-green-800
+                                    {% elif batch.batch_type == 'autoclave' %}bg-purple-100 text-purple-800
+                                    {% endif %}">
+                                    {% if batch.batch_type == 'casting' %}🧱 Заливка
+                                    {% elif batch.batch_type == 'cutting' %}✂️ Резка
+                                    {% elif batch.batch_type == 'autoclave' %}🔥 Автоклав
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ user.fio }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    {% if batch.equipment %}
+                                        {{ batch.equipment.name }}
+                                    {% else %}
+                                        Не указано
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if batch.status == 'active' %}bg-yellow-100 text-yellow-800
+                                    {% elif batch.status == 'completed' %}bg-green-100 text-green-800
+                                    {% elif batch.status == 'cancelled' %}bg-red-100 text-red-800
+                                    {% elif batch.status == 'inactive' %}bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {% if batch.status == 'active' %}Активна
+                                    {% elif batch.status == 'completed' %}Завершена
+                                    {% elif batch.status == 'cancelled' %}Отменена
+                                    {% elif batch.status == 'inactive' %}Приостановлена
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ batch.start_time.strftime('%d.%m.%Y %H:%M') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="/batch/{{ batch.id }}" class="text-blue-600 hover:text-blue-900 mr-3">Просмотр</a>
+                                <a href="{{ url_for('edit_batch', batch_id=batch.id) }}" class="text-orange-600 hover:text-orange-900 mr-3">✏️ Редактировать</a>
+                                {% if batch.status == 'active' %}
+                                <a href="/add_material_to_batch/{{ batch.id }}" class="text-green-600 hover:text-green-900 mr-3">Материалы</a>
+                                <a href="/cancel_batch/{{ batch.id }}" class="text-red-600 hover:text-red-900">Отменить</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">
+                                Партии не найдены
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Пагинация -->
+            {% if pagination.pages > 1 %}
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    {% if pagination.has_prev %}
+                    <a href="{{ url_for('batch_list', page=pagination.prev_num, **current_filters) }}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Назад
+                    </a>
+                    {% endif %}
+                    {% if pagination.has_next %}
+                    <a href="{{ url_for('batch_list', page=pagination.next_num, **current_filters) }}" 
+                       class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Вперед
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Показано 
+                            <span class="font-medium">{{ (pagination.page - 1) * pagination.per_page + 1 }}</span>
+                            до 
+                            <span class="font-medium">{{ pagination.page * pagination.per_page if pagination.page * pagination.per_page <= pagination.total else pagination.total }}</span>
+                            из 
+                            <span class="font-medium">{{ pagination.total }}</span>
+                            результатов
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            {% if pagination.has_prev %}
+                            <a href="{{ url_for('batch_list', page=pagination.prev_num, **current_filters) }}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Предыдущая</span>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                            {% endif %}
+                            
+                            {% for page_num in pagination.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != pagination.page %}
+                                    <a href="{{ url_for('batch_list', page=page_num, **current_filters) }}" 
+                                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        {{ page_num }}
+                                    </a>
+                                    {% else %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600">
+                                        {{ page_num }}
+                                    </span>
+                                    {% endif %}
+                                {% else %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                            <a href="{{ url_for('batch_list', page=pagination.next_num, **current_filters) }}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Следующая</span>
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                            {% endif %}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>

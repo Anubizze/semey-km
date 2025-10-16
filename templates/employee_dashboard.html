@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель сотрудника — Заливщик</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 40px;
+            max-width: 900px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card-header {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .btn-custom {
+            background: #4facfe;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-custom:hover {
+            background: #00c6ff;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px auto;
+            max-width: 150px;
+        }
+        
+        /* Мобильная адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                margin-top: 20px;
+                padding: 0 15px;
+            }
+            .card {
+                border-radius: 10px;
+            }
+            .card-header {
+                font-size: 1.25rem;
+                padding: 1rem;
+            }
+            .logo {
+                max-width: 120px;
+                margin-bottom: 15px;
+            }
+            .btn-custom {
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 12px;
+                font-size: 16px;
+            }
+            .form-control {
+                font-size: 16px;
+                padding: 12px;
+            }
+            .form-label {
+                font-size: 14px;
+                font-weight: 600;
+            }
+            .row {
+                margin: 0;
+            }
+            .col-md-6 {
+                padding: 0 5px;
+                margin-bottom: 15px;
+            }
+            .col-md-4 {
+                padding: 0 5px;
+                margin-bottom: 15px;
+            }
+            .col-md-3 {
+                padding: 0 5px;
+                margin-bottom: 15px;
+            }
+            .table {
+                font-size: 12px;
+            }
+            .table th, .table td {
+                padding: 8px 4px;
+            }
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                margin-top: 10px;
+                padding: 0 10px;
+            }
+            .card-header {
+                font-size: 1.1rem;
+                padding: 0.75rem;
+            }
+            .logo {
+                max-width: 100px;
+                margin-bottom: 10px;
+            }
+            .btn-custom {
+                padding: 10px;
+                font-size: 14px;
+            }
+            .form-control {
+                font-size: 14px;
+                padding: 10px;
+            }
+            .form-label {
+                font-size: 13px;
+            }
+            .table {
+                font-size: 10px;
+            }
+            .table th, .table td {
+                padding: 6px 2px;
+            }
+            .btn-sm {
+                padding: 4px 8px;
+                font-size: 10px;
+            }
+            .col-md-6, .col-md-4, .col-md-3 {
+                padding: 0 2px;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Логотип -->
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="logo">
+
+        <div class="card">
+            <div class="card-header">
+                Ввод данных по заливке
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/employee_dashboard">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Цемент (кг)</label>
+                            <input type="number" step="0.01" class="form-control" name="cement" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Известь (кг)</label>
+                            <input type="number" step="0.01" class="form-control" name="lime" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Алюминиевая пудра (кг)</label>
+                            <input type="number" step="0.01" class="form-control" name="alumina_powder" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Шлам (л)</label>
+                            <input type="number" step="0.01" class="form-control" name="sludge" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Гипс (кг)</label>
+                            <input type="number" step="0.01" class="form-control" name="gypsum" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Вода (л)</label>
+                            <input type="number" step="0.01" class="form-control" name="water" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Сульфанол (л)</label>
+                            <input type="number" step="0.01" class="form-control" name="sulfanol" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Смена</label>
+                            <select class="form-control" name="shift" required>
+                                <option value="">Выберите смену</option>
+                                <option value="day">Дневная</option>
+                                <option value="night">Ночная</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-custom btn-lg">Сохранить данные</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- История операций за сегодня -->
+        {% if today_entries %}
+        <div class="card mt-4">
+            <div class="card-header">
+                📋 История операций за сегодня
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Время</th>
+                                <th>Смена</th>
+                                <th>Цемент</th>
+                                <th>Известь</th>
+                                <th>Ал. пудра</th>
+                                <th>Шлам</th>
+                                <th>Гипс</th>
+                                <th>Вода</th>
+                                <th>Сульфанол</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in today_entries %}
+                            <tr>
+                                <td><strong>{{ entry.time }}</strong></td>
+                                <td>
+                                    <span class="badge {% if entry.shift == 'day' %}bg-primary{% else %}bg-dark{% endif %}">
+                                        {{ entry.shift|title }}
+                                    </span>
+                                </td>
+                                <td>{{ entry.cement }}кг</td>
+                                <td>{{ entry.lime }}кг</td>
+                                <td>{{ entry.alum_powder }}кг</td>
+                                <td>{{ entry.sludge }}л</td>
+                                <td>{{ entry.gypsum }}кг</td>
+                                <td>{{ entry.water }}л</td>
+                                <td>{{ entry.sulfanol }}л</td>
+                                <td>
+                                    <a href="{{ url_for('edit_entry', entry_id=entry.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        ✏️ Редактировать
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card mt-4">
+            <div class="card-header">
+                📋 История операций за сегодня
+            </div>
+            <div class="card-body text-center text-muted">
+                <p>📝 Операций за сегодня пока нет</p>
+                <p class="small">Заполните форму выше, чтобы начать работу</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

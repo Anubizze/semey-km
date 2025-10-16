@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Отмена партии</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Заголовок -->
+  <header class="bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center">
+          <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="h-10 w-auto mr-3">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">Отмена партии</h1>
+            <p class="text-sm text-gray-600">Укажите причину отмены производственной партии</p>
+          </div>
+        </div>
+        <a href="/batch_list" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+          Назад к списку
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Основной контент -->
+  <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Информация о партии -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Информация о партии</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600">Номер партии:</p>
+          <p class="font-semibold text-gray-900">{{ batch.batch_number }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Тип партии:</p>
+          <p class="font-semibold text-gray-900">
+            {% if batch.batch_type == 'cutting' %}✂️ Резка
+            {% elif batch.batch_type == 'autoclave' %}🔥 Автоклав
+            {% elif batch.batch_type == 'casting' %}🧱 Заливка
+            {% else %}{{ batch.batch_type|title }}
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Продукт:</p>
+          <p class="font-semibold text-gray-900">
+            {% if batch.product %}{{ batch.product.product_code }} - {{ batch.product.name }}
+            {% else %}Не указан
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Оборудование:</p>
+          <p class="font-semibold text-gray-900">
+            {% if batch.equipment %}{{ batch.equipment.name }}
+            {% else %}Не указано
+            {% endif %}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Время начала:</p>
+          <p class="font-semibold text-gray-900">{{ batch.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600">Статус:</p>
+          <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+            Активна
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Форма отмены -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-4">Причина отмены</h2>
+      
+      <form method="POST" action="/cancel_batch/{{ batch.id }}">
+        <div class="mb-6">
+          <label for="reason" class="block text-sm font-medium text-gray-700 mb-2">
+            Укажите причину отмены партии:
+          </label>
+          <select id="reason" name="reason" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+            <option value="">Выберите причину...</option>
+            <option value="Дефект сырья">Дефект сырья</option>
+            <option value="Неисправность оборудования">Неисправность оборудования</option>
+            <option value="Нарушение технологического процесса">Нарушение технологического процесса</option>
+            <option value="Неправильные пропорции материалов">Неправильные пропорции материалов</option>
+            <option value="Превышение времени обработки">Превышение времени обработки</option>
+            <option value="Плохое качество готовой продукции">Плохое качество готовой продукции</option>
+            <option value="Аварийная остановка">Аварийная остановка</option>
+            <option value="Другая причина">Другая причина</option>
+          </select>
+        </div>
+
+        <div class="mb-6">
+          <label for="custom_reason" class="block text-sm font-medium text-gray-700 mb-2">
+            Дополнительные комментарии (необязательно):
+          </label>
+          <textarea id="custom_reason" name="custom_reason" rows="3" 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    placeholder="Опишите подробности, если необходимо..."></textarea>
+        </div>
+
+        <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <span class="text-red-400 text-lg">⚠️</span>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">
+                Внимание!
+              </h3>
+              <div class="mt-2 text-sm text-red-700">
+                <p>Отмена партии приведет к:</p>
+                <ul class="list-disc list-inside mt-1">
+                  <li>Изменению статуса на "Отменена"</li>
+                  <li>Завершению времени работы</li>
+                  <li>Учету в статистике брака</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <a href="/batch_list" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-md font-medium transition-colors">
+            Отмена
+          </a>
+          <button type="submit" 
+                  class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md font-medium transition-colors"
+                  onclick="return confirm('Вы уверены, что хотите отменить эту партию?')">
+            Отменить партию
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <script>
+    // Автоматическое заполнение дополнительного поля при выборе "Другая причина"
+    document.getElementById('reason').addEventListener('change', function() {
+      const customReason = document.getElementById('custom_reason');
+      if (this.value === 'Другая причина') {
+        customReason.required = true;
+        customReason.placeholder = 'Укажите причину отмены...';
+      } else {
+        customReason.required = false;
+        customReason.placeholder = 'Опишите подробности, если необходимо...';
+      }
+    });
+
+    // Объединение основной причины и дополнительных комментариев
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const reason = document.getElementById('reason').value;
+      const customReason = document.getElementById('custom_reason').value;
+      
+      if (customReason.trim()) {
+        const finalReason = reason + ': ' + customReason;
+        document.getElementById('reason').value = finalReason;
+      }
+    });
+  </script>
+
+</body>
+</html>
+
+

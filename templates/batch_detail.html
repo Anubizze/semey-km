@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Партия {{ batch.batch_number }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Логотип -->
+    <header class="text-center py-6 bg-white shadow-sm">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="mx-auto w-32">
+        <h1 class="text-2xl font-bold mt-4">Партия {{ batch.batch_number }}</h1>
+        <div class="mt-4">
+            <a href="/batch_list" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mr-2">Список партий</a>
+            {% if batch.status == 'active' %}
+            <a href="/add_material_to_batch/{{ batch.id }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg mr-2">Добавить материал</a>
+            {% endif %}
+            <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Выйти</a>
+        </div>
+    </header>
+
+    <!-- Контент -->
+    <main class="w-full max-w-6xl mx-auto p-6 space-y-6">
+
+        <!-- Информация о партии -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Информация о партии</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Номер партии</h3>
+                    <p class="text-lg font-semibold">{{ batch.batch_number }}</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Тип</h3>
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        {% if batch.batch_type == 'casting' %}bg-blue-100 text-blue-800
+                        {% elif batch.batch_type == 'cutting' %}bg-green-100 text-green-800
+                        {% elif batch.batch_type == 'autoclave' %}bg-purple-100 text-purple-800
+                        {% endif %}">
+                        {% if batch.batch_type == 'casting' %}Заливка
+                        {% elif batch.batch_type == 'cutting' %}Резка
+                        {% elif batch.batch_type == 'autoclave' %}Автоклав
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Статус</h3>
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                        {% if batch.status == 'active' %}bg-yellow-100 text-yellow-800
+                        {% elif batch.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif batch.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% elif batch.status == 'inactive' %}bg-gray-100 text-gray-800
+                        {% endif %}">
+                        {% if batch.status == 'active' %}Активна
+                        {% elif batch.status == 'completed' %}Завершена
+                        {% elif batch.status == 'cancelled' %}Отменена
+                        {% elif batch.status == 'inactive' %}Приостановлена
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Оператор</h3>
+                    <p class="text-lg font-semibold">{{ user.fio }}</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Продукт</h3>
+                    <p class="text-lg font-semibold">
+                        {% if batch.product %}
+                            <div class="font-mono text-blue-600">{{ batch.product.product_code }}</div>
+                            <div class="text-sm text-gray-600">{{ batch.product.name }}</div>
+                        {% else %}
+                            Не указан
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Оборудование</h3>
+                    <p class="text-lg font-semibold">
+                        {% if batch.equipment %}
+                            {{ batch.equipment.name }}
+                        {% else %}
+                            Не указано
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Начало работы</h3>
+                    <p class="text-lg font-semibold">{{ batch.start_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+
+                {% if batch.end_time %}
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-medium text-gray-700">Окончание</h3>
+                    <p class="text-lg font-semibold">{{ batch.end_time.strftime('%d.%m.%Y %H:%M') }}</p>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {% if batch.notes %}
+            <div class="mt-4">
+                <h3 class="font-medium text-gray-700 mb-2">Заметки</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p>{{ batch.notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Кнопки действий -->
+            {% if batch.status == 'active' %}
+            <div class="mt-6 flex gap-4">
+                <form method="POST" action="/complete_batch/{{ batch.id }}" class="inline">
+                    <button type="submit" 
+                            class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold"
+                            onclick="return confirm('Завершить партию?')">
+                        Завершить партию
+                    </button>
+                </form>
+                <form method="POST" action="/pause_batch/{{ batch.id }}" class="inline">
+                    <button type="submit" 
+                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg font-semibold"
+                            onclick="return confirm('Приостановить партию?')">
+                        Приостановить
+                    </button>
+                </form>
+                <a href="/cancel_batch/{{ batch.id }}" 
+                   class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold">
+                    Отменить партию
+                </a>
+            </div>
+            {% elif batch.status == 'inactive' %}
+            <div class="mt-6 flex gap-4">
+                <form method="POST" action="/resume_batch/{{ batch.id }}" class="inline">
+                    <button type="submit" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold"
+                            onclick="return confirm('Возобновить партию?')">
+                        Возобновить
+                    </button>
+                </form>
+                <a href="/cancel_batch/{{ batch.id }}" 
+                   class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold">
+                    Отменить партию
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Материалы партии -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Материалы партии</h2>
+            
+            {% if materials %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Материал</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Количество</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Единица</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Время записи</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for batch_material, material in materials %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ material.name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ "%.2f"|format(batch_material.quantity) }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ material.unit }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ batch_material.recorded_at.strftime('%d.%m.%Y %H:%M') }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center text-gray-500 py-8">
+                <p>Материалы не добавлены</p>
+                {% if batch.status == 'active' %}
+                <a href="/add_material_to_batch/{{ batch.id }}" class="text-blue-600 hover:text-blue-800 mt-2 inline-block">
+                    Добавить материалы
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </main>
+
+</body>
+</html>

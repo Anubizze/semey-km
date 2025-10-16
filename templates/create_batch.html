@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создание партии</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Логотип -->
+    <header class="text-center py-6 bg-white shadow-sm">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="mx-auto w-32">
+        <h1 class="text-2xl font-bold mt-4">Создание партии</h1>
+        <div class="mt-4">
+            <a href="/batch_list" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg mr-2">Список партий</a>
+            <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Выйти</a>
+        </div>
+    </header>
+
+    <!-- Контент -->
+    <main class="w-full max-w-4xl mx-auto p-6">
+        <div class="bg-white p-8 rounded-2xl shadow-md">
+            <form method="POST" action="/create_batch">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Номер партии -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Номер партии *</label>
+                        <input type="text" name="batch_number" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               placeholder="Например: BATCH-2024-001">
+                    </div>
+
+                    <!-- Продукт -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Продукт *</label>
+                        <select name="product_id" required 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Выберите продукт</option>
+                            {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.product_code }} - {{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if not products %}
+                        <p class="text-red-500 text-sm mt-1">⚠️ Сначала создайте продукты в админ-панели</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Тип партии -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Тип партии *</label>
+                        <select name="batch_type" required 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Выберите тип</option>
+                            <option value="casting">🧱 Заливка</option>
+                            <option value="cutting">✂️ Резка</option>
+                            <option value="autoclave">🔥 Автоклав</option>
+                        </select>
+                    </div>
+
+                    <!-- Оборудование -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Оборудование</label>
+                        <select name="equipment_id" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Не выбрано</option>
+                            {% for eq in equipment %}
+                            <option value="{{ eq.id }}">{{ eq.name }} ({{ eq.equipment_type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Время начала -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Время начала</label>
+                        <input type="datetime-local" name="start_time" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Если не указано, будет использовано текущее время</p>
+                    </div>
+
+                    <!-- Время окончания -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Время окончания</label>
+                        <input type="datetime-local" name="end_time" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Опционально. Если указано, должно быть больше времени начала</p>
+                    </div>
+
+                    <!-- Заметки -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Заметки</label>
+                        <textarea name="notes" rows="3" 
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  placeholder="Дополнительная информация о партии"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="mt-8 flex justify-center space-x-4">
+                    <button type="submit" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-semibold">
+                        Создать партию
+                    </button>
+                    <a href="{{ url_for('duplicate_last_batch') }}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold"
+                       onclick="return confirm('Создать копию последней партии?')">
+                        📋 Дублировать последнюю
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>

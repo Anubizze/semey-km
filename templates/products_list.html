@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление продуктами</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <header class="text-center py-6 bg-white shadow-sm">
+        <img src="{{ url_for('static', filename='images/logo_0.png') }}" alt="Логотип" class="mx-auto w-32">
+        <h1 class="text-2xl font-bold mt-4">🏭 Управление продуктами</h1>
+        <div class="mt-4 space-x-4">
+            <a href="/admin_dashboard" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">← Назад в админку</a>
+            <a href="/add_product" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">➕ Добавить продукт</a>
+            <a href="/logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg">Выйти</a>
+        </div>
+    </header>
+
+    <main class="w-full max-w-6xl mx-auto p-6">
+        <div class="bg-white p-6 rounded-2xl shadow-lg">
+            <h2 class="text-xl font-semibold mb-6">Список продуктов</h2>
+            
+            {% if products %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-3 text-left">Код продукта</th>
+                            <th class="px-4 py-3 text-left">Наименование</th>
+                            <th class="px-4 py-3 text-left">Описание</th>
+                            <th class="px-4 py-3 text-left">Дата создания</th>
+                            <th class="px-4 py-3 text-left">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3 font-mono text-blue-600">{{ product.product_code }}</td>
+                            <td class="px-4 py-3 font-medium">{{ product.name }}</td>
+                            <td class="px-4 py-3 text-gray-600">
+                                {{ product.description[:50] }}{% if product.description|length > 50 %}...{% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-gray-500">{{ product.created_at.strftime('%d.%m.%Y') }}</td>
+                            <td class="px-4 py-3">
+                                <form action="{{ url_for('delete_product', id=product.id) }}" method="POST" 
+                                      onsubmit="return confirm('Удалить продукт {{ product.name }}?')" 
+                                      class="inline">
+                                    <button type="submit" 
+                                            class="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded-md transition">
+                                        🗑️ Удалить
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <p class="text-gray-500 text-lg">Продукты не найдены</p>
+                <a href="/add_product" class="inline-block mt-4 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg">
+                    ➕ Добавить первый продукт
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+</body>
+</html>
+
+
+
+

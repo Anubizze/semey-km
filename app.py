@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import csv
 import io
 import json
+import os
 import time
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -1945,4 +1946,9 @@ def get_material_consumption_data():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    
+    # Для Railway и продакшена
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_ENV') != 'production'
+    
+    app.run(host='0.0.0.0', port=port, debug=debug)
